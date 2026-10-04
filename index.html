@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Radar BESS</title>
+  <meta name="description" content="Seletor de sites para estudar energia solar, armazenamento (BESS), mercado elétrico e transição energética." />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23F2A33A'/%3E%3Cpath d='M36 8 18 36h12l-4 20 20-30H34z' fill='%23fff'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #F6F4EE;
+      --bg-grad: radial-gradient(1200px 600px at 10% -10%, #FFE7C2 0%, transparent 60%),
+                 radial-gradient(900px 500px at 110% 0%, #D8F0E6 0%, transparent 55%);
+      --surface: #FFFFFF;
+      --surface-2: #F1EEE6;
+      --text: #1D1B16;
+      --muted: #6B665B;
+      --line: #E3DED2;
+      --accent: #E8891C;
+      --accent-ink: #FFFFFF;
+      --shadow: 0 1px 2px rgba(30, 25, 10, .06), 0 6px 20px rgba(30, 25, 10, .06);
+      --shadow-hover: 0 2px 4px rgba(30, 25, 10, .08), 0 14px 34px rgba(30, 25, 10, .12);
+      --done: #2E9D6A;
+      --radius: 16px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #12130F;
+        --bg-grad: radial-gradient(1200px 600px at 10% -10%, #3A2A12 0%, transparent 60%),
+                   radial-gradient(900px 500px at 110% 0%, #123327 0%, transparent 55%);
+        --surface: #1C1D18;
+        --surface-2: #26271F;
+        --text: #F2EFE6;
+        --muted: #A39E90;
+        --line: #33342B;
+        --accent: #F2A33A;
+        --accent-ink: #1A1408;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 20px rgba(0, 0, 0, .25);
+        --shadow-hover: 0 2px 4px rgba(0, 0, 0, .5), 0 14px 34px rgba(0, 0, 0, .4);
+        --done: #4CC38A;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #12130F;
+      --bg-grad: radial-gradient(1200px 600px at 10% -10%, #3A2A12 0%, transparent 60%),
+                 radial-gradient(900px 500px at 110% 0%, #123327 0%, transparent 55%);
+      --surface: #1C1D18;
+      --surface-2: #26271F;
+      --text: #F2EFE6;
+      --muted: #A39E90;
+      --line: #33342B;
+      --accent: #F2A33A;
+      --accent-ink: #1A1408;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 20px rgba(0, 0, 0, .25);
+      --shadow-hover: 0 2px 4px rgba(0, 0, 0, .5), 0 14px 34px rgba(0, 0, 0, .4);
+      --done: #4CC38A;
+    }
+
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg-grad), var(--bg);
+      background-attachment: fixed;
+      line-height: 1.45;
+      min-height: 100vh;
+    }
+    a { color: inherit; }
+    button { font: inherit; color: inherit; cursor: pointer; }
+
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+    /* ---------- Cabeçalho ---------- */
+    header.hero { padding: 36px 0 18px; }
+    .hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .logo {
+      width: 52px; height: 52px; border-radius: 16px; flex: none;
+      background: linear-gradient(135deg, #F7B44C, #E8891C);
+      display: grid; place-items: center; box-shadow: var(--shadow);
+    }
+    .logo svg { width: 28px; height: 28px; }
+    h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); margin: 0; letter-spacing: -.02em; line-height: 1.1; }
+    .subtitle { margin: 4px 0 0; color: var(--muted); }
+    .theme-btn {
+      border: 1px solid var(--line); background: var(--surface); border-radius: 12px;
+      width: 42px; height: 42px; display: grid; place-items: center; flex: none;
+    }
+
+    .stats { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; align-items: center; }
+    .pill {
+      background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
+      padding: 6px 14px; font-size: .9rem; color: var(--muted);
+    }
+    .pill b { color: var(--text); }
+    .progress { flex: 1 1 200px; height: 8px; border-radius: 99px; background: var(--surface-2); overflow: hidden; min-width: 140px; }
+    .progress > span { display: block; height: 100%; width: 0; background: var(--done); transition: width .4s ease; }
+
+    /* ---------- Barra de ferramentas ---------- */
+    .toolbar {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+      padding: 12px 0;
+    }
+    .toolbar-row { display: flex; gap: 10px; align-items: center; }
+    .search {
+      flex: 1; display: flex; align-items: center; gap: 8px;
+      background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 0 12px;
+      min-width: 0;
+    }
+    .search input {
+      flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--text);
+      font: inherit; padding: 11px 0;
+    }
+    .search:focus-within { border-color: var(--accent); }
+    .draw-btn {
+      flex: none; border: 0; border-radius: 12px; padding: 11px 18px; font-weight: 700;
+      background: var(--accent); color: var(--accent-ink); box-shadow: var(--shadow);
+      display: flex; align-items: center; gap: 8px; white-space: nowrap;
+    }
+    .draw-btn:hover { filter: brightness(1.05); }
+    .chips { display: flex; gap: 8px; overflow-x: auto; padding: 12px 0 2px; scrollbar-width: none; }
+    .chips::-webkit-scrollbar { display: none; }
+    .chip {
+      flex: none; border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
+      padding: 6px 13px; font-size: .88rem; white-space: nowrap; display: flex; gap: 6px; align-items: center;
+    }
+    .chip .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--c, var(--muted)); }
+    .chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+    .chip.toggle[aria-pressed="true"] { background: var(--done); border-color: var(--done); color: #fff; }
+
+    /* ---------- Seções e cards ---------- */
+    main { padding: 10px 0 60px; }
+    section.cat { margin-top: 30px; }
+    .cat-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+    .cat-icon {
+      width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center;
+      background: color-mix(in srgb, var(--c) 18%, var(--surface)); font-size: 1.1rem; align-self: center; flex: none;
+    }
+    .cat-head h2 { font-size: 1.2rem; margin: 0; letter-spacing: -.01em; }
+    .cat-head p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .cat-count { margin-left: auto; color: var(--muted); font-size: .85rem; white-space: nowrap; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+    .card {
+      position: relative; display: flex; flex-direction: column; gap: 10px;
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 16px; box-shadow: var(--shadow); text-decoration: none;
+      transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
+      overflow: hidden;
+    }
+    .card::before {
+      content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--c);
+    }
+    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); border-color: color-mix(in srgb, var(--c) 45%, var(--line)); }
+    .card-top { display: flex; align-items: center; gap: 12px; }
+    .fav {
+      width: 40px; height: 40px; border-radius: 11px; flex: none; position: relative; overflow: hidden;
+      background: color-mix(in srgb, var(--c) 20%, var(--surface)); color: var(--c);
+      display: grid; place-items: center; font-weight: 800; font-size: 1rem;
+    }
+    .fav img { position: absolute; inset: 6px; width: 28px; height: 28px; border-radius: 6px; background: var(--surface); opacity: 0; transition: opacity .2s; }
+    .fav img.ok { opacity: 1; }
+    .card h3 { margin: 0; font-size: 1rem; line-height: 1.2; }
+    .domain { color: var(--muted); font-size: .8rem; overflow-wrap: anywhere; }
+    .desc { margin: 0; font-size: .9rem; color: var(--muted); flex: 1; }
+    .card-foot { display: flex; align-items: center; gap: 8px; }
+    .tag { font-size: .75rem; padding: 3px 8px; border-radius: 6px; background: var(--surface-2); color: var(--muted); }
+    .open-hint { margin-left: auto; font-size: .82rem; font-weight: 600; color: var(--c); }
+    .done-btn {
+      position: absolute; top: 12px; right: 12px; z-index: 2;
+      width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--line); background: var(--surface);
+      display: grid; place-items: center; color: transparent; padding: 0;
+    }
+    .done-btn:hover { border-color: var(--done); color: var(--done); }
+    .card.is-done .done-btn { background: var(--done); border-color: var(--done); color: #fff; }
+    .card.is-done { background: color-mix(in srgb, var(--done) 6%, var(--surface)); }
+    .card h3 { padding-right: 34px; }
+
+    .empty { text-align: center; color: var(--muted); padding: 60px 0; display: none; }
+
+    footer { color: var(--muted); font-size: .85rem; padding: 20px 0 40px; text-align: center; }
+
+    /* ---------- Sorteio ---------- */
+    .modal {
+      position: fixed; inset: 0; z-index: 50; display: none; place-items: center; padding: 16px;
+      background: rgba(10, 10, 8, .55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    }
+    .modal.open { display: grid; }
+    .modal-box {
+      width: min(440px, 100%); background: var(--surface); border-radius: 22px; padding: 26px 22px 22px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, .35); text-align: center; position: relative;
+      border-top: 6px solid var(--c, var(--accent));
+      animation: pop .25s ease;
+    }
+    @keyframes pop { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .modal-close {
+      position: absolute; top: 10px; right: 10px; border: 0; background: transparent; width: 36px; height: 36px;
+      border-radius: 10px; font-size: 1.3rem; color: var(--muted);
+    }
+    .draw-label { font-size: .8rem; text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0; }
+    .draw-cat { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; font-size: .85rem; color: var(--c); font-weight: 600; }
+    .draw-name { font-size: 1.7rem; font-weight: 800; letter-spacing: -.02em; margin: 6px 0 2px; min-height: 2.2em; display: grid; place-items: center; line-height: 1.1; }
+    .draw-name.spinning { opacity: .55; filter: blur(.5px); }
+    .draw-desc { color: var(--muted); margin: 6px 0 18px; min-height: 2.9em; font-size: .95rem; }
+    .draw-actions { display: flex; gap: 10px; }
+    .draw-actions > * {
+      flex: 1; border-radius: 12px; padding: 12px; font-weight: 700; text-decoration: none; text-align: center;
+      border: 1px solid var(--line); background: var(--surface-2);
+    }
+    .draw-actions .primary { background: var(--c, var(--accent)); color: #fff; border-color: transparent; }
+    .draw-actions .disabled { pointer-events: none; opacity: .45; }
+    .draw-opts { margin-top: 14px; font-size: .85rem; color: var(--muted); display: flex; justify-content: center; gap: 6px; align-items: center; }
+
+    @media (max-width: 560px) {
+      header.hero { padding-top: 24px; }
+      .draw-btn .lbl-long { display: none; }
+      .grid { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="hero wrap">
+    <div class="hero-top">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M13.5 2 4 14h6l-1.5 8L18 10h-6z" fill="#fff"/></svg>
+        </div>
+        <div>
+          <h1>Radar BESS</h1>
+          <p class="subtitle">Escolha um site para abrir e estudar — ou deixe a sorte decidir.</p>
+        </div>
+      </div>
+      <button class="theme-btn" id="themeBtn" title="Alternar tema claro/escuro" aria-label="Alternar tema">◐</button>
+    </div>
+    <div class="stats">
+      <span class="pill"><b id="statTotal">0</b> sites</span>
+      <span class="pill"><b id="statCats">0</b> categorias</span>
+      <span class="pill"><b id="statDone">0</b> estudados</span>
+      <div class="progress" aria-hidden="true"><span id="progressBar"></span></div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <div class="wrap">
+      <div class="toolbar-row">
+        <label class="search">
+          <span aria-hidden="true">🔎</span>
+          <input id="q" type="search" placeholder="Buscar por nome, assunto ou domínio…" autocomplete="off" />
+        </label>
+        <button class="draw-btn" id="drawBtn" title="Sortear um site">🎲 <span>Sortear<span class="lbl-long"> um site</span></span></button>
+      </div>
+      <div class="chips" id="chips" role="toolbar" aria-label="Filtrar por categoria"></div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <div id="sections"></div>
+    <p class="empty" id="empty">Nenhum site encontrado com esse filtro.</p>
+  </main>
+
+  <footer class="wrap">Marque ✓ nos sites que já estudou — o progresso fica salvo neste aparelho.</footer>
+
+  <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="drawName">
+    <div class="modal-box" id="modalBox">
+      <button class="modal-close" id="modalClose" aria-label="Fechar">×</button>
+      <p class="draw-label">Hoje você vai estudar</p>
+      <div class="draw-cat" id="drawCat"></div>
+      <div class="draw-name" id="drawName"></div>
+      <div class="draw-desc" id="drawDesc"></div>
+      <div class="draw-actions">
+        <button id="redrawBtn">🎲 Sortear de novo</button>
+        <a id="drawOpen" class="primary" target="_blank" rel="noopener">Abrir site ↗</a>
+      </div>
+      <label class="draw-opts"><input type="checkbox" id="skipDone" checked /> Pular os que já estudei</label>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    'use strict';
+
+    var CATEGORIES = [
+      { id: 'br-news', icon: '🇧🇷', color: '#2E9D6A', title: 'Brasil · Notícias', sub: 'Solar, BESS e setor elétrico brasileiro' },
+      { id: 'br-gov', icon: '🏛️', color: '#2F6FD6', title: 'Brasil · Governo e operadores', sub: 'Regulação, mercado, operação e planejamento' },
+      { id: 'br-assoc', icon: '🤝', color: '#7A5AF8', title: 'Brasil · Associações e consultoria', sub: 'Entidades do setor e inteligência de mercado' },
+      { id: 'storage', icon: '🔋', color: '#E8891C', title: 'Armazenamento (BESS)', sub: 'Notícias e análises de baterias e storage' },
+      { id: 'supply', icon: '⛏️', color: '#B5563B', title: 'Cadeia de suprimentos e preços', sub: 'Lítio, células, módulos e preços de mercado' },
+      { id: 'solar', icon: '☀️', color: '#D9A400', title: 'Solar e renováveis · Global', sub: 'Mídia internacional de solar, eólica e renováveis' },
+      { id: 'transition', icon: '⚡', color: '#0EA5A4', title: 'Transição energética · EUA', sub: 'Utilities, cleantech, EVs e política energética' },
+      { id: 'research', icon: '📊', color: '#C2417A', title: 'Research e consultorias', sub: 'Relatórios, LCOE/LCOS e dados de mercado' },
+      { id: 'agencies', icon: '🌍', color: '#3B82F6', title: 'Agências e dados abertos', sub: 'Estatísticas, cenários e laboratórios públicos' },
+      { id: 'intl-assoc', icon: '🏅', color: '#8B5CF6', title: 'Associações internacionais', sub: 'Indústria solar na Europa e nos EUA' },
+      { id: 'latam', icon: '🌎', color: '#E05252', title: 'América Latina e Espanha', sub: 'Mídia em espanhol e organismos regionais' }
+    ];
+
+    // [categoria, nome, url, descrição, idioma]
+    var SITES = [
+      ['br-news', 'Canal Solar', 'https://canalsolar.com.br', 'Portal de referência em energia solar e armazenamento no Brasil.', 'PT'],
+      ['br-news', 'pv magazine Brasil', 'https://www.pv-magazine-brasil.com', 'Edição brasileira da pv magazine: mercado fotovoltaico e storage.', 'PT'],
+      ['br-news', 'CanalEnergia', 'https://www.canalenergia.com.br', 'Notícias do setor elétrico: leilões, regulação, geração e transmissão.', 'PT'],
+      ['br-news', 'MegaWhat', 'https://megawhat.energy', 'Jornalismo e análise sobre o setor de energia e mercado livre.', 'PT'],
+      ['br-news', 'eixos', 'https://eixos.com.br', 'Política energética, petróleo, gás e transição energética.', 'PT'],
+      ['br-news', 'Brasil Energia', 'https://brasilenergia.com.br', 'Revista e portal sobre energia elétrica, óleo e gás.', 'PT'],
+      ['br-news', 'Portal Solar', 'https://www.portalsolar.com.br', 'Marketplace e conteúdo sobre energia solar e geração distribuída.', 'PT'],
+
+      ['br-gov', 'ANEEL', 'https://www.gov.br/aneel', 'Agência Nacional de Energia Elétrica: regulação, tarifas e consultas públicas.', 'PT'],
+      ['br-gov', 'CCEE', 'https://www.ccee.org.br', 'Câmara de Comercialização: PLD, mercado livre e leilões.', 'PT'],
+      ['br-gov', 'ONS', 'https://www.ons.org.br', 'Operador Nacional do Sistema: operação do SIN, carga e geração.', 'PT'],
+      ['br-gov', 'EPE', 'https://www.epe.gov.br', 'Empresa de Pesquisa Energética: PDE, PNE e estudos de planejamento.', 'PT'],
+      ['br-gov', 'MME', 'https://www.gov.br/mme', 'Ministério de Minas e Energia: políticas públicas e portarias.', 'PT'],
+
+      ['br-assoc', 'ABSAE', 'https://www.absae.org.br', 'Associação Brasileira de Soluções de Armazenamento de Energia.', 'PT'],
+      ['br-assoc', 'ABSOLAR', 'https://www.absolar.org.br', 'Associação Brasileira de Energia Solar Fotovoltaica e seus infográficos.', 'PT'],
+      ['br-assoc', 'ABGD', 'https://www.abgd.com.br', 'Associação Brasileira de Geração Distribuída.', 'PT'],
+      ['br-assoc', 'Abraceel', 'https://abraceel.com.br', 'Associação dos Comercializadores de Energia: mercado livre.', 'PT'],
+      ['br-assoc', 'Greener', 'https://www.greener.com.br', 'Consultoria e estudos estratégicos de solar e armazenamento no Brasil.', 'PT'],
+
+      ['storage', 'Energy-Storage.news', 'https://www.energy-storage.news', 'Principal portal global de notícias sobre armazenamento de energia.', 'EN'],
+      ['storage', 'ESS News', 'https://www.ess-news.com', 'Notícias de storage da equipe da pv magazine.', 'EN'],
+      ['storage', 'Modo Energy', 'https://modoenergy.com', 'Dados e análises de receita de BESS em mercados de energia.', 'EN'],
+      ['storage', 'Batteries International', 'https://www.batteriesinternational.com', 'Revista sobre a indústria de baterias e suas tecnologias.', 'EN'],
+      ['storage', 'Energy Storage Journal', 'https://www.energystoragejournal.com', 'Negócios e tecnologia em armazenamento de energia.', 'EN'],
+      ['storage', 'CNESA', 'http://en.cnesa.org', 'Aliança chinesa de armazenamento: dados do maior mercado de BESS.', 'EN'],
+
+      ['supply', 'Benchmark Minerals', 'https://www.benchmarkminerals.com', 'Preços e inteligência da cadeia de lítio e baterias.', 'EN'],
+      ['supply', 'Rho Motion', 'https://rhomotion.com', 'Dados de EVs, baterias e armazenamento estacionário.', 'EN'],
+      ['supply', 'InfoLink', 'https://www.infolink-group.com', 'Preços semanais de polissilício, wafers, células e módulos.', 'EN'],
+      ['supply', 'EnergyTrend', 'https://www.energytrend.com', 'Pesquisa de mercado e preços da TrendForce para solar e baterias.', 'EN'],
+
+      ['solar', 'pv magazine', 'https://www.pv-magazine.com', 'Edição internacional: notícias globais do mercado fotovoltaico.', 'EN'],
+      ['solar', 'PV Tech', 'https://www.pv-tech.org', 'Tecnologia, fabricação e projetos solares no mundo.', 'EN'],
+      ['solar', 'Solar Power World', 'https://www.solarpowerworldonline.com', 'Instalação, produtos e mercado solar nos EUA.', 'EN'],
+      ['solar', 'Recharge', 'https://www.rechargenews.com', 'Negócios em eólica, solar, hidrogênio e transição.', 'EN'],
+      ['solar', 'Renewables Now', 'https://renewablesnow.com', 'Fluxo diário de notícias de projetos e negócios renováveis.', 'EN'],
+      ['solar', 'RenewEconomy', 'https://reneweconomy.com.au', 'Mercado australiano de energia, solar e baterias.', 'EN'],
+
+      ['transition', 'Utility Dive', 'https://www.utilitydive.com', 'Utilities, rede, regulação e mercados de energia nos EUA.', 'EN'],
+      ['transition', 'Canary Media', 'https://www.canarymedia.com', 'Jornalismo independente sobre a transição energética.', 'EN'],
+      ['transition', 'Latitude Media', 'https://www.latitudemedia.com', 'Tecnologia, IA e a rede elétrica do futuro.', 'EN'],
+      ['transition', 'CleanTechnica', 'https://cleantechnica.com', 'Cleantech, veículos elétricos e energia limpa.', 'EN'],
+      ['transition', 'Electrek', 'https://electrek.co', 'Veículos elétricos, baterias e energia solar.', 'EN'],
+
+      ['research', 'BloombergNEF', 'https://about.bnef.com', 'Pesquisa de referência em transição energética e custos de baterias.', 'EN'],
+      ['research', 'Wood Mackenzie', 'https://www.woodmac.com', 'Consultoria e dados sobre energia, renováveis e storage.', 'EN'],
+      ['research', 'S&P Global', 'https://www.spglobal.com', 'Commodity Insights: energia, preços e análise de mercado.', 'EN'],
+      ['research', 'Lazard', 'https://www.lazard.com', 'Estudos anuais de LCOE e LCOS (custo nivelado de energia e storage).', 'EN'],
+
+      ['agencies', 'IEA', 'https://www.iea.org', 'Agência Internacional de Energia: relatórios e cenários globais.', 'EN'],
+      ['agencies', 'IRENA', 'https://www.irena.org', 'Agência Internacional de Energias Renováveis: custos e capacidade.', 'EN'],
+      ['agencies', 'Ember', 'https://ember-energy.org', 'Think tank com dados abertos de geração elétrica no mundo.', 'EN'],
+      ['agencies', 'NLR', 'https://www.nlr.gov', 'Laboratório nacional dos EUA (ex-NREL): pesquisa em energia.', 'EN'],
+      ['agencies', 'EIA', 'https://www.eia.gov', 'Administração de Informação Energética dos EUA: estatísticas.', 'EN'],
+
+      ['intl-assoc', 'SolarPower Europe', 'https://www.solarpowereurope.org', 'Associação solar europeia: Global Market Outlook e relatórios.', 'EN'],
+      ['intl-assoc', 'SEIA', 'https://www.seia.org', 'Associação da indústria solar dos EUA e dados de mercado.', 'EN'],
+
+      ['latam', 'pv magazine Latam', 'https://www.pv-magazine-latam.com', 'Mercado fotovoltaico na América Latina.', 'ES'],
+      ['latam', 'pv magazine México', 'https://www.pv-magazine-mexico.com', 'Energia solar e storage no México.', 'ES'],
+      ['latam', 'pv magazine España', 'https://www.pv-magazine.es', 'Fotovoltaica e armazenamento na Espanha.', 'ES'],
+      ['latam', 'Energía Estratégica', 'https://www.energiaestrategica.com', 'Renováveis na América Latina e Espanha.', 'ES'],
+      ['latam', 'El Periódico de la Energía', 'https://elperiodicodelaenergia.com', 'Diário espanhol de energia e mercados.', 'ES'],
+      ['latam', 'Energías Renovables', 'https://www.energias-renovables.com', 'Revista espanhola de energias renováveis.', 'ES'],
+      ['latam', 'Review Energy', 'https://www.review-energy.com', 'Notícias de energia em espanhol e inglês.', 'ES'],
+      ['latam', 'Revista Electricidad', 'https://www.revistaei.cl', 'Setor elétrico chileno: geração, transmissão e storage.', 'ES'],
+      ['latam', 'BNamericas', 'https://www.bnamericas.com', 'Inteligência de negócios e projetos na América Latina.', 'ES'],
+      ['latam', 'OLADE', 'https://www.olade.org', 'Organização Latino-Americana de Energia: dados regionais.', 'ES']
+    ];
+
+    var STORE_KEY = 'radar-bess:estudados';
+    var THEME_KEY = 'radar-bess:tema';
+
+    function load(key, fallback) {
+      try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch (e) { return fallback; }
+    }
+    function save(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) { /* sem armazenamento: segue sem salvar */ }
+    }
+
+    var catById = {};
+    CATEGORIES.forEach(function (c) { catById[c.id] = c; });
+
+    var sites = SITES.map(function (s) {
+      var host = s[2].replace(/^https?:\/\//, '').replace(/\/$/, '');
+      return { cat: s[0], name: s[1], url: s[2], desc: s[3], lang: s[4], host: host.replace(/^www\./, ''), domain: host.split('/')[0] };
+    });
+
+    var done = load(STORE_KEY, {});
+    var state = { cat: 'all', q: '', onlyPending: false };
+
+    var $ = function (id) { return document.getElementById(id); };
+    function el(tag, cls, text) {
+      var n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text != null) n.textContent = text;
+      return n;
+    }
+    function norm(s) { return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); }
+
+    // ---------- Chips de filtro ----------
+    function buildChips() {
+      var chips = $('chips');
+      var items = [{ id: 'all', title: 'Todos', color: null }].concat(CATEGORIES);
+      items.forEach(function (c) {
+        var b = el('button', 'chip');
+        b.dataset.cat = c.id;
+        if (c.color) {
+          var d = el('span', 'dot'); d.style.setProperty('--c', c.color); b.appendChild(d);
+        }
+        b.appendChild(document.createTextNode(c.title));
+        b.addEventListener('click', function () { state.cat = c.id; render(); });
+        chips.appendChild(b);
+      });
+      var t = el('button', 'chip toggle', '⏳ Só não estudados');
+      t.id = 'pendingChip';
+      t.addEventListener('click', function () { state.onlyPending = !state.onlyPending; render(); });
+      chips.appendChild(t);
+    }
+
+    // ---------- Cards ----------
+    function buildCard(site) {
+      var cat = catById[site.cat];
+      var a = el('a', 'card');
+      a.href = site.url; a.target = '_blank'; a.rel = 'noopener';
+      a.style.setProperty('--c', cat.color);
+      if (done[site.url]) a.classList.add('is-done');
+
+      var top = el('div', 'card-top');
+      var fav = el('div', 'fav', site.name.replace(/[^A-Za-zÀ-ú0-9]/g, '').slice(0, 2).toUpperCase());
+      var img = new Image();
+      img.alt = ''; img.loading = 'lazy'; img.referrerPolicy = 'no-referrer';
+      img.src = 'https://www.google.com/s2/favicons?sz=64&domain=' + encodeURIComponent(site.domain);
+      img.onerror = function () { img.remove(); };
+      img.onload = function () { if (img.naturalWidth <= 16) img.remove(); else img.classList.add('ok'); };
+      fav.appendChild(img);
+      var titles = el('div');
+      titles.appendChild(el('h3', null, site.name));
+      titles.appendChild(el('div', 'domain', site.host));
+      top.appendChild(fav); top.appendChild(titles);
+
+      var foot = el('div', 'card-foot');
+      foot.appendChild(el('span', 'tag', site.lang));
+      foot.appendChild(el('span', 'open-hint', 'Abrir ↗'));
+
+      var check = el('button', 'done-btn', '✓');
+      check.type = 'button';
+      check.title = 'Marcar como estudado';
+      check.setAttribute('aria-label', 'Marcar ' + site.name + ' como estudado');
+      check.addEventListener('click', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        if (done[site.url]) delete done[site.url]; else done[site.url] = Date.now();
+        save(STORE_KEY, done);
+        render();
+      });
+
+      a.appendChild(check);
+      a.appendChild(top);
+      a.appendChild(el('p', 'desc', site.desc));
+      a.appendChild(foot);
+      return a;
+    }
+
+    function matches(site) {
+      if (state.cat !== 'all' && site.cat !== state.cat) return false;
+      if (state.onlyPending && done[site.url]) return false;
+      if (!state.q) return true;
+      var hay = norm([site.name, site.host, site.desc, catById[site.cat].title, site.lang].join(' '));
+      return norm(state.q).split(/\s+/).every(function (w) { return hay.indexOf(w) !== -1; });
+    }
+
+    function render() {
+      var root = $('sections');
+      root.textContent = '';
+      var shown = 0;
+      CATEGORIES.forEach(function (cat) {
+        var list = sites.filter(function (s) { return s.cat === cat.id && matches(s); });
+        if (!list.length) return;
+        shown += list.length;
+        var sec = el('section', 'cat');
+        sec.style.setProperty('--c', cat.color);
+        var head = el('div', 'cat-head');
+        head.appendChild(el('div', 'cat-icon', cat.icon));
+        var t = el('div');
+        t.appendChild(el('h2', null, cat.title));
+        t.appendChild(el('p', null, cat.sub));
+        head.appendChild(t);
+        var total = sites.filter(function (s) { return s.cat === cat.id; });
+        var nDone = total.filter(function (s) { return done[s.url]; }).length;
+        head.appendChild(el('span', 'cat-count', nDone + '/' + total.length + ' estudados'));
+        sec.appendChild(head);
+        var grid = el('div', 'grid');
+        list.forEach(function (s) { grid.appendChild(buildCard(s)); });
+        sec.appendChild(grid);
+        root.appendChild(sec);
+      });
+      $('empty').style.display = shown ? 'none' : 'block';
+
+      Array.prototype.forEach.call(document.querySelectorAll('#chips .chip[data-cat]'), function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.cat === state.cat));
+      });
+      $('pendingChip').setAttribute('aria-pressed', String(state.onlyPending));
+
+      var nDoneAll = sites.filter(function (s) { return done[s.url]; }).length;
+      $('statTotal').textContent = sites.length;
+      $('statCats').textContent = CATEGORIES.length;
+      $('statDone').textContent = nDoneAll;
+      $('progressBar').style.width = (100 * nDoneAll / sites.length) + '%';
+    }
+
+    // ---------- Sorteio ----------
+    var spinTimer = null;
+    function drawPool() {
+      var skip = $('skipDone').checked;
+      var pool = sites.filter(function (s) {
+        if (state.cat !== 'all' && s.cat !== state.cat) return false;
+        return !(skip && done[s.url]);
+      });
+      return pool.length ? pool : sites.filter(function (s) { return state.cat === 'all' || s.cat === state.cat; });
+    }
+    function showSite(s, final) {
+      var cat = catById[s.cat];
+      $('modalBox').style.setProperty('--c', cat.color);
+      $('drawCat').textContent = cat.icon + ' ' + cat.title;
+      $('drawName').textContent = s.name;
+      $('drawName').classList.toggle('spinning', !final);
+      $('drawDesc').textContent = final ? s.desc : ' ';
+      var open = $('drawOpen');
+      open.href = s.url;
+      open.classList.toggle('disabled', !final);
+    }
+    function draw() {
+      clearTimeout(spinTimer);
+      var pool = drawPool();
+      var pick = pool[Math.floor(Math.random() * pool.length)];
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var steps = reduce ? 0 : 16, i = 0;
+      (function tick() {
+        if (i >= steps) { showSite(pick, true); return; }
+        showSite(pool[Math.floor(Math.random() * pool.length)], false);
+        i++;
+        spinTimer = setTimeout(tick, 40 + i * i * 1.2);
+      })();
+    }
+    function openModal() { $('modal').classList.add('open'); draw(); }
+    function closeModal() { clearTimeout(spinTimer); $('modal').classList.remove('open'); }
+
+    $('drawBtn').addEventListener('click', openModal);
+    $('redrawBtn').addEventListener('click', draw);
+    $('modalClose').addEventListener('click', closeModal);
+    $('modal').addEventListener('click', function (e) { if (e.target === $('modal')) closeModal(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+    $('drawOpen').addEventListener('click', function () { setTimeout(closeModal, 150); });
+
+    // ---------- Busca e tema ----------
+    $('q').addEventListener('input', function (e) { state.q = e.target.value.trim(); render(); });
+
+    var theme = load(THEME_KEY, null);
+    if (theme) document.documentElement.setAttribute('data-theme', theme);
+    $('themeBtn').addEventListener('click', function () {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+        (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      var next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      save(THEME_KEY, next);
+    });
+
+    buildChips();
+    render();
+  })();
+  </script>
+</body>
+</html>
